@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+
 
 namespace ObjectPrinting
 {
@@ -8,34 +11,62 @@ namespace ObjectPrinting
     {
         public string PrintToString(TOwner obj)
         {
-            return PrintToString(obj, 0);
+            var visited = new HashSet<object>(new ReferenceEqualityComparer());
+            return PrintToString(obj, 0, visited);
         }
 
-        private string PrintToString(object obj, int nestingLevel)
+        private string PrintToString(object obj, int nestingLevel, HashSet<object> visited)
         {
-            //TODO apply configurations
             if (obj == null)
                 return "null" + Environment.NewLine;
 
-            var finalTypes = new[]
-            {
-                typeof(int), typeof(double), typeof(float), typeof(string),
-                typeof(DateTime), typeof(TimeSpan)
-            };
-            if (finalTypes.Contains(obj.GetType()))
-                return obj + Environment.NewLine;
-
-            var identation = new string('\t', nestingLevel + 1);
-            var sb = new StringBuilder();
             var type = obj.GetType();
+            
+            if (IsFinalType(type))
+                return obj.ToString() + Environment.NewLine;
+            
+            if (visited.Contains(obj))
+                return $"<cyclic reference to {type.Name}>" + Environment.NewLine;
+
+            visited.Add(obj);
+            
+
+            var sb = new StringBuilder();
+            var indent = new string('\t', nestingLevel);
             sb.AppendLine(type.Name);
-            foreach (var propertyInfo in type.GetProperties())
+
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                         .Where(p => p.GetIndexParameters().Length == 0))
             {
-                sb.Append(identation + propertyInfo.Name + " = " +
-                          PrintToString(propertyInfo.GetValue(obj),
-                              nestingLevel + 1));
+                object value = property.GetValue(obj);
+                
+                sb.Append(indent + "\t" +  property.Name + " = " + PrintToString(value, nestingLevel + 1, visited));
             }
+
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                object value = field.GetValue(obj);
+                sb.Append(indent + "\t" + field.Name + " = " +
+                         PrintToString(value, nestingLevel + 1, visited));
+            }
+            
+            visited.Remove(obj);
+
+            
             return sb.ToString();
         }
+        
+        private static bool IsFinalType(Type type)
+        {
+            if (type.IsPrimitive) return true;
+            if (type.IsEnum) return true;
+            if (type == typeof(string)) return true;
+            if (type == typeof(decimal)) return true;
+            if (type == typeof(DateTime)) return true;
+            if (type == typeof(TimeSpan)) return true;
+
+            return false;
+        }
+
     }
 }
