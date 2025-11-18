@@ -1,72 +1,51 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
+namespace ObjectPrinting;
 
-namespace ObjectPrinting
+public class PrintingConfig<TOwner> : IPrintingConfigInternal
 {
-    public class PrintingConfig<TOwner>
+    public HashSet<Type> ExcludedTypes { get; } = new();
+    public HashSet<string> ExcludedProperties { get; } = new();
+
+    public Dictionary<Type, Func<object, string>> TypeSerializers { get; } = new();
+    public Dictionary<string, Func<object, string>> PropertySerializers { get; } = new();
+    public Dictionary<string, int> TrimLengths { get; } = new();
+
+
+    public PrintingConfig<TOwner> Excluding<TProp>()
     {
-        public string PrintToString(TOwner obj)
-        {
-            var visited = new HashSet<object>(new ReferenceEqualityComparer());
-            return PrintToString(obj, 0, visited);
-        }
+        ExcludedTypes.Add(typeof(TProp));
+        return this;
+    }
 
-        private string PrintToString(object obj, int nestingLevel, HashSet<object> visited)
-        {
-            if (obj == null)
-                return "null" + Environment.NewLine;
+    public PrintingConfig<TOwner> Excluding<TProp>(Expression<Func<TOwner, TProp>> selector)
+    {
+        var name = ((MemberExpression)selector.Body).Member.Name;
+        ExcludedProperties.Add(name);
+        return this;
+    }
+    
+    public TypePrintingConfig<TOwner, TProp> Printing<TProp>()
+        => new TypePrintingConfig<TOwner, TProp>(this);
 
-            var type = obj.GetType();
-            
-            if (IsFinalType(type))
-                return obj.ToString() + Environment.NewLine;
-            
-            if (visited.Contains(obj))
-                return $"<cyclic reference to {type.Name}>" + Environment.NewLine;
+    public PrintingConfig<TOwner> Printing<TProp>(Func<TProp, string> selector)
+    {
+        TypeSerializers[typeof(TProp)] = o => selector((TProp)o);
+        return this;
+    }
 
-            visited.Add(obj);
-            
+    public MemberPrintingConfig<TOwner, TProp> SelectMember<TProp>(
+        Expression<Func<TOwner, TProp>> selector)
+    {
+        var name = ((MemberExpression)selector.Body).Member.Name;
+        return new MemberPrintingConfig<TOwner, TProp>(this, name);
+    }
 
-            var sb = new StringBuilder();
-            var indent = new string('\t', nestingLevel);
-            sb.AppendLine(type.Name);
-
-            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                         .Where(p => p.GetIndexParameters().Length == 0))
-            {
-                object value = property.GetValue(obj);
-                
-                sb.Append(indent + "\t" +  property.Name + " = " + PrintToString(value, nestingLevel + 1, visited));
-            }
-
-            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
-            {
-                object value = field.GetValue(obj);
-                sb.Append(indent + "\t" + field.Name + " = " +
-                         PrintToString(value, nestingLevel + 1, visited));
-            }
-            
-            visited.Remove(obj);
-
-            
-            return sb.ToString();
-        }
-        
-        private static bool IsFinalType(Type type)
-        {
-            if (type.IsPrimitive) return true;
-            if (type.IsEnum) return true;
-            if (type == typeof(string)) return true;
-            if (type == typeof(decimal)) return true;
-            if (type == typeof(DateTime)) return true;
-            if (type == typeof(TimeSpan)) return true;
-
-            return false;
-        }
-
+    public string PrintToString(TOwner obj)
+    {
+        return ObjectTraversal.Print(obj, this);
     }
 }
