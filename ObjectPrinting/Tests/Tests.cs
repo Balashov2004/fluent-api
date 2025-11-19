@@ -1,0 +1,146 @@
+﻿
+using System;
+using System.Collections.Generic;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
+
+namespace ObjectPrinting.Tests;
+
+public class Tests
+{
+    [Test]
+    public void ExcludingTypeTest()
+    {
+        var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
+        var printer = ObjectPrinter.For<Person>()
+            .Excluding<Guid>()
+            .Excluding<int>();
+        string printed = printer.PrintToString(person);
+        Assert.That(printed, Does.Not.Contain("Id"));
+        Assert.That(printed, Does.Not.Contain("Age"));
+        Assert.That(printed, Contains.Substring("Name"));
+    }
+
+    [Test]
+    public void ExcludingPropertyTest()
+    {
+        var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
+        var printer = ObjectPrinter.For<Person>()
+            .Excluding(p => p.Age);
+        string printed = printer.PrintToString(person);
+        Assert.That(printed, Does.Not.Contain("Age"));
+        Assert.That(printed, Contains.Substring("Name"));
+    }
+    
+    [Test]
+    public void CustomTypeSerializationTest()
+    {
+        var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
+        var printer = ObjectPrinter.For<Person>()
+            .Printing<int>(i => $"Number is {i}");
+        string printed = printer.PrintToString(person);
+        Assert.That(printed, Contains.Substring("Number is 25"));
+    }
+    
+    [Test]
+    public void TrimTest()
+    {
+        var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
+        var printer = ObjectPrinter.For<Person>()
+            .SelectMember(p => p.Name).Trim(3);
+        string printed = printer.PrintToString(person);
+        Assert.That(printed, Contains.Substring("Name = Ale"));
+    }
+    
+    [Test]
+    public void CustomDoubleTest()
+    {
+        var person = new Person { Name = "Alex", Score = 12.5 };
+        var printer1 = ObjectPrinter.For<Person>()
+            .Printing<double>(TypeNumber.WithDot);
+        string printed1 = printer1.PrintToString(person);;
+        Assert.That(printed1, Contains.Substring("12.5"));
+        
+        var printer2 = ObjectPrinter.For<Person>()
+            .Printing<double>(TypeNumber.WithComma);
+        string printed2 = printer2.PrintToString(person);
+        Assert.That(printed2, Contains.Substring("12,5"));
+    }
+    
+    [Test]
+    public void ExtensionWithConfig()
+    {
+        var person = new Person { Name = "Alex", Age = 25 };
+    
+        string printed = person.PrintToString(cfg => cfg.Excluding(p => p.Age));
+    
+        Assert.That(printed, Does.Not.Contain("Age"));
+        Assert.That(printed, Contains.Substring("Alex"));
+    }
+
+    [Test]  
+    public void SerializeFieldsTest()
+    {
+        var person = new Person { FirstName = "Ivanov", Name = "Alex", Age = 25 };
+        var printer = ObjectPrinter.For<Person>();
+        string printed = printer.PrintToString(person);
+
+        Assert.That(printed, Contains.Substring("FirstName"));
+        Assert.That(printed, Contains.Substring("Ivanov"));
+    }
+    
+    [Test]
+    public void ArraySerializeTest()
+    {
+        var obj = new Container
+        {
+            Array = new[] { 1, 2, 3 }
+        };
+
+        var printer = ObjectPrinter.For<Container>();
+        string result = printer.PrintToString(obj);
+
+        Assert.That(result, Contains.Substring("Array"));
+        Assert.That(result, Contains.Substring("[0] = 1"));
+        Assert.That(result, Contains.Substring("[1] = 2"));
+        Assert.That(result, Contains.Substring("[2] = 3"));
+    }
+    
+    [Test]
+    public void ListSerializeTest()
+    {
+        var obj = new Container
+        {
+            List = new List<string> { "Alex", "Ivan" }
+        };
+
+        var printer = ObjectPrinter.For<Container>();
+        string result = printer.PrintToString(obj);
+
+        Assert.That(result, Contains.Substring("List"));
+        Assert.That(result, Contains.Substring("[0] = Alex"));
+        Assert.That(result, Contains.Substring("[1] = Ivan"));
+    }
+    
+    [Test]
+    public void DictionarySerializationTest()
+    {
+        var obj = new Container
+        {
+            Dict = new Dictionary<string, int>
+            {
+                ["Alex"] = 19,
+                ["Ivan"] = 21
+            }
+        };
+
+        var printer = ObjectPrinter.For<Container>();
+        string result = printer.PrintToString(obj);
+
+        Assert.That(result, Contains.Substring("Dict"));
+        Assert.That(result, Contains.Substring("[Alex] = 19"));
+        Assert.That(result, Contains.Substring("[Ivan] = 21"));
+    }
+
+    
+}
