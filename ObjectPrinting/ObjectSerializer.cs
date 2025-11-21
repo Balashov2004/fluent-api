@@ -38,6 +38,7 @@ public class ObjectSerializer
 
         if (obj is IEnumerable numerable)
             return _enumerablePrinter.PrintEnumerable(numerable, type, level, config, visited, this);
+        
 
         var indentObj = new string('\t', level);
         var sbObj = new StringBuilder();

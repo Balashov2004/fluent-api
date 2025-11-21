@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ObjectPrinting.Interface;
 
-public interface IPrintingConfigInternal
+internal interface IPrintingConfigInternal
 {
     HashSet<Type> ExcludedTypes { get; }
     HashSet<string> ExcludedProperties { get; }
