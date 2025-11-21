@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ObjectPrinting;
+namespace ObjectPrinting.Interface;
 
 public interface IPrintingConfigInternal
 {
@@ -11,4 +11,5 @@ public interface IPrintingConfigInternal
     Dictionary<Type, Func<object, string>> TypeSerializers { get; }
     Dictionary<string, Func<object, string>> PropertySerializers { get; }
     Dictionary<string, int> TrimLengths { get; }
+    public int? GlobalStringTrimLength { get; }
 }

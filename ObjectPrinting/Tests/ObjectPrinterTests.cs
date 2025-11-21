@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
 namespace ObjectPrinting.Tests;
 
-public class Tests
+public class ObjectPrinterTests
 {
     [Test]
     public void ExcludingTypeTest()
@@ -15,7 +14,7 @@ public class Tests
         var printer = ObjectPrinter.For<Person>()
             .Excluding<Guid>()
             .Excluding<int>();
-        string printed = printer.PrintToString(person);
+        var printed = printer.PrintToString(person);
         Assert.That(printed, Does.Not.Contain("Id"));
         Assert.That(printed, Does.Not.Contain("Age"));
         Assert.That(printed, Contains.Substring("Name"));
@@ -27,7 +26,7 @@ public class Tests
         var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
         var printer = ObjectPrinter.For<Person>()
             .Excluding(p => p.Age);
-        string printed = printer.PrintToString(person);
+        var printed = printer.PrintToString(person);
         Assert.That(printed, Does.Not.Contain("Age"));
         Assert.That(printed, Contains.Substring("Name"));
     }
@@ -38,7 +37,7 @@ public class Tests
         var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
         var printer = ObjectPrinter.For<Person>()
             .Printing<int>(i => $"Number is {i}");
-        string printed = printer.PrintToString(person);
+        var printed = printer.PrintToString(person);
         Assert.That(printed, Contains.Substring("Number is 25"));
     }
     
@@ -48,7 +47,7 @@ public class Tests
         var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
         var printer = ObjectPrinter.For<Person>()
             .SelectMember(p => p.Name).Trim(3);
-        string printed = printer.PrintToString(person);
+        var printed = printer.PrintToString(person);
         Assert.That(printed, Contains.Substring("Name = Ale"));
     }
     
@@ -63,7 +62,7 @@ public class Tests
         
         var printer2 = ObjectPrinter.For<Person>()
             .Printing<double>(TypeNumber.WithComma);
-        string printed2 = printer2.PrintToString(person);
+        var printed2 = printer2.PrintToString(person);
         Assert.That(printed2, Contains.Substring("12,5"));
     }
     
@@ -72,7 +71,7 @@ public class Tests
     {
         var person = new Person { Name = "Alex", Age = 25 };
     
-        string printed = person.PrintToString(cfg => cfg.Excluding(p => p.Age));
+        var printed = person.PrintToString(cfg => cfg.Excluding(p => p.Age));
     
         Assert.That(printed, Does.Not.Contain("Age"));
         Assert.That(printed, Contains.Substring("Alex"));
@@ -83,7 +82,7 @@ public class Tests
     {
         var person = new Person { FirstName = "Ivanov", Name = "Alex", Age = 25 };
         var printer = ObjectPrinter.For<Person>();
-        string printed = printer.PrintToString(person);
+        var printed = printer.PrintToString(person);
 
         Assert.That(printed, Contains.Substring("FirstName"));
         Assert.That(printed, Contains.Substring("Ivanov"));
@@ -98,7 +97,7 @@ public class Tests
         };
 
         var printer = ObjectPrinter.For<Container>();
-        string result = printer.PrintToString(obj);
+        var result = printer.PrintToString(obj);
 
         Assert.That(result, Contains.Substring("Array"));
         Assert.That(result, Contains.Substring("[0] = 1"));
@@ -115,7 +114,7 @@ public class Tests
         };
 
         var printer = ObjectPrinter.For<Container>();
-        string result = printer.PrintToString(obj);
+        var result = printer.PrintToString(obj);
 
         Assert.That(result, Contains.Substring("List"));
         Assert.That(result, Contains.Substring("[0] = Alex"));
@@ -135,7 +134,7 @@ public class Tests
         };
 
         var printer = ObjectPrinter.For<Container>();
-        string result = printer.PrintToString(obj);
+        var result = printer.PrintToString(obj);
 
         Assert.That(result, Contains.Substring("Dict"));
         Assert.That(result, Contains.Substring("[Alex] = 19"));
