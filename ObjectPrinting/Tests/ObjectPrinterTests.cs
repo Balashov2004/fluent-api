@@ -78,7 +78,7 @@ public class ObjectPrinterTests
     }
 
     [Test]  
-    public void SerializeFieldsTest()
+    public void DefaultSerializationIncludesPropertiesAndFields()
     {
         var person = new Person { FirstName = "Ivanov", Name = "Alex", Age = 25 };
         var printer = ObjectPrinter.For<Person>();
