@@ -9,5 +9,6 @@ namespace ObjectPrinting.Tests
         public int Age { get; set; }
         public double Score { get; set; }
         public Guid Id { get; set; }
+        
     }
 }

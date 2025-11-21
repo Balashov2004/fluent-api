@@ -140,6 +140,19 @@ public class ObjectPrinterTests
         Assert.That(result, Contains.Substring("[Alex] = 19"));
         Assert.That(result, Contains.Substring("[Ivan] = 21"));
     }
-
     
+    [Test]
+    public void PrettySerializationTest()
+    {
+        var person = new Person { Name = "Alex", Age = 25, FirstName = "Ivanov" };
+        var printer = ObjectPrinter.For<Person>();
+        var printed = printer.PrintToString(person);
+
+        var expected = "Person\n\tName = Alex\n\tAge = 25\n\tScore = 0\n\tId = Guid\n\tFirstName = Ivanov";
+        
+        Assert.That(
+            printed.Replace("\r\n", "\n").Trim(),
+            Is.EqualTo(expected.Trim())
+        );
+    }
 }
