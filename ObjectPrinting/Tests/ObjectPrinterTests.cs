@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using NUnit.Framework;
 
 namespace ObjectPrinting.Tests;
@@ -52,18 +53,23 @@ public class ObjectPrinterTests
     }
     
     [Test]
-    public void CustomDoubleTest()
+    public void Printing_WithCulture_ForIFormattableTypes()
     {
-        var person = new Person { Name = "Alex", Score = 12.5 };
-        var printer1 = ObjectPrinter.For<Person>()
-            .Printing<double>(TypeNumber.WithDot);
-        string printed1 = printer1.PrintToString(person);;
-        Assert.That(printed1, Contains.Substring("12.5"));
+        var obj = new Format()
+        {
+            Value = 1234.56,
+            Date = new DateTime(2024, 5, 25, 13, 45, 0)
+        };
+    
+        var printer = ObjectPrinter.For<Format>()
+            .Printing<double>().Using(CultureInfo.InvariantCulture)
+            .Printing<DateTime>().Using(new CultureInfo("ru-RU"));
+    
+        string result = printer.PrintToString(obj);
         
-        var printer2 = ObjectPrinter.For<Person>()
-            .Printing<double>(TypeNumber.WithComma);
-        var printed2 = printer2.PrintToString(person);
-        Assert.That(printed2, Contains.Substring("12,5"));
+        Assert.That(result, Does.Contain("1234.56"));
+        Assert.That(result, Does.Contain("25.05.2024"));
+        Assert.That(result, Does.Not.Contain("5/25/2024"));
     }
     
     [Test]
@@ -164,6 +170,5 @@ public class ObjectPrinterTests
         var result = printer.PrintToString(person);
         Assert.That(result, Contains.Substring("Alex"));
         Assert.That(result, Contains.Substring("Ivan"));
-        
     }
 }

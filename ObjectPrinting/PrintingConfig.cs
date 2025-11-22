@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq.Expressions;
-using System.Reflection;
 using ObjectPrinting.Interface;
 
 namespace ObjectPrinting;
@@ -15,15 +15,14 @@ public class PrintingConfig<TOwner> : IPrintingConfigInternal
     public Dictionary<string, Func<object, string>> PropertySerializers { get; } = new();
     public Dictionary<string, int> TrimLengths { get; } = new();
     public int? GlobalStringTrimLength { get; private set; }
-    
-    private ObjectSerializer objectSerializer = new ObjectSerializer();
-    
+
+    private readonly ObjectSerializer objectSerializer = new ObjectSerializer();
+
     public PrintingConfig<TOwner> TrimStringsGlobal(int maxLength)
     {
         GlobalStringTrimLength = maxLength;
         return this;
     }
-
 
     public PrintingConfig<TOwner> Excluding<TProp>()
     {
@@ -43,6 +42,11 @@ public class PrintingConfig<TOwner> : IPrintingConfigInternal
         TypeSerializers[typeof(TProp)] = o => selector((TProp)o);
         return this;
     }
+    
+    public TypePrintingConfig<TOwner, TProp> Printing<TProp>()
+    {
+        return new TypePrintingConfig<TOwner, TProp>(this);
+    }
 
     public MemberPrintingConfig<TOwner, TProp> SelectMember<TProp>(
         Expression<Func<TOwner, TProp>> selector)
@@ -55,4 +59,5 @@ public class PrintingConfig<TOwner> : IPrintingConfigInternal
     {
         return objectSerializer.Print(obj, this);
     }
+    
 }

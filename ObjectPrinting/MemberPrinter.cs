@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework.Internal;
 using ObjectPrinting.Interface;
 
 namespace ObjectPrinting;
@@ -29,8 +28,8 @@ internal class MemberPrinter
         {
             int? maxLen = null;
 
-            if (config.TrimLengths.TryGetValue(memberName, out var propLen))
-                maxLen = propLen;
+            if (config.TrimLengths.TryGetValue(memberName, out var propTrim))
+                maxLen = propTrim;
             else if (config.GlobalStringTrimLength.HasValue)
                 maxLen = config.GlobalStringTrimLength.Value;
 

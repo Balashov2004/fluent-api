@@ -18,6 +18,7 @@ internal class EnumerablePrinter
     {
         var indent = new string('\t', level);
         var sb = new StringBuilder();
+
         sb.AppendLine(type.Name);
 
         if (enumerable is IDictionary dict)
@@ -35,8 +36,9 @@ internal class EnumerablePrinter
             {
                 sb.Append(indent + "\t");
 
-                var itemType = item.GetType();
-                if (itemType.IsGenericType && itemType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
+                if (item != null &&
+                    item.GetType().IsGenericType &&
+                    item.GetType().GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
                 {
                     dynamic kv = item;
                     sb.Append($"[{kv.Key}] = {serializer.PrintInternal(kv.Value, level + 1, config, visited)}");

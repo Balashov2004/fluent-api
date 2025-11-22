@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace ObjectPrinting;
 
@@ -21,7 +22,22 @@ public class MemberPrintingConfig<TOwner, TProp>
 
     public PrintingConfig<TOwner> Trim(int maxLength)
     {
+        if (typeof(TProp) != typeof(string))
+            throw new InvalidOperationException("Trim can be used only on string properties");
+
         config.TrimLengths[memberName] = maxLength;
+        return config;
+    }
+
+    public PrintingConfig<TOwner> Using(CultureInfo culture)
+    {
+        if (!typeof(IFormattable).IsAssignableFrom(typeof(TProp)))
+            throw new InvalidOperationException(
+                "Culture can be applied only to IFormattable properties");
+
+        config.PropertySerializers[memberName] = obj =>
+            ((IFormattable)obj).ToString(null, culture);
+
         return config;
     }
 }
