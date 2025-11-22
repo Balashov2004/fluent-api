@@ -155,4 +155,15 @@ public class ObjectPrinterTests
             Is.EqualTo(expected.Trim())
         );
     }
+
+    [Test]
+    public void TrimGlobalTest()
+    {
+        var person = new Person { Name = "Alexandr", Age = 25, FirstName = "Ivanov" };
+        var printer = ObjectPrinter.For<Person>().TrimStringsGlobal(4);
+        var result = printer.PrintToString(person);
+        Assert.That(result, Contains.Substring("Alex"));
+        Assert.That(result, Contains.Substring("Ivan"));
+        
+    }
 }

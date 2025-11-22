@@ -18,7 +18,7 @@ public class PrintingConfig<TOwner> : IPrintingConfigInternal
     
     private ObjectSerializer objectSerializer = new ObjectSerializer();
     
-    public PrintingConfig<TOwner> TrimStringsToLength(int maxLength)
+    public PrintingConfig<TOwner> TrimStringsGlobal(int maxLength)
     {
         GlobalStringTrimLength = maxLength;
         return this;
