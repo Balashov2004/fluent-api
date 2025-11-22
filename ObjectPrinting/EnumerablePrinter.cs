@@ -31,7 +31,7 @@ internal class EnumerablePrinter
         }
         else
         {
-            int i = 0;
+            var i = 0;
             foreach (var item in enumerable)
             {
                 sb.Append(indent + "\t");

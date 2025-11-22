@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using NUnit.Framework;
 
 namespace ObjectPrinting.Tests;
@@ -37,7 +38,7 @@ public class ObjectPrinterNestedTests
         };
 
         var printed = ObjectPrinter.For<Person>()
-            .Printing<double>(TypeNumber.WithDot)
+            .Printing<double>().Using(CultureInfo.InvariantCulture)
             .PrintToString(person);
 
         Assert.That(printed, Contains.Substring("FirstName = Ivanov"));
