@@ -47,7 +47,7 @@ public class ObjectPrinterTests
     {
         var person = new Person { Name = "Alex", Age = 25, Id = Guid.NewGuid() };
         var printer = ObjectPrinter.For<Person>()
-            .SelectMember(p => p.Name).Trim(3);
+            .SelectMember(p => p.Name).AsString().Trim(3);
         var printed = printer.PrintToString(person);
         Assert.That(printed, Contains.Substring("Name = Ale"));
     }
